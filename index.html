@@ -110,6 +110,7 @@
                     <div class="add-methods">
                         <button id="method-file" class="method-tab active">Local File</button>
                         <button id="method-url" class="method-tab">Image URL</button>
+                        <button id="method-pexels" class="method-tab">Pexels Search</button>
                     </div>
 
                     <!-- Local File drag and drop -->
@@ -127,6 +128,18 @@
                         <input type="text" id="title-input" placeholder="Image Title (Optional)">
                         <button type="submit" class="submit-btn">Add Image</button>
                     </form>
+
+                    <!-- Pexels Search container -->
+                    <div id="pexels-search-container" class="url-form hidden">
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="pexels-query-input" placeholder="e.g. nature, neon, cyberpunk" style="flex-grow: 1;">
+                            <button type="button" id="btn-pexels-search" class="submit-btn" style="width: auto; padding: 0 16px;">Search</button>
+                        </div>
+                        <div id="pexels-search-status" class="pexels-status hidden">Searching Pexels...</div>
+                        <div id="pexels-search-results" class="pexels-grid">
+                            <!-- Thumbnails dynamically rendered here -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Section 3: Manage Image List -->
