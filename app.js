@@ -114,6 +114,16 @@ const btnBackToGallery = document.getElementById('btn-back-to-gallery');
 const decorActiveIndex = document.getElementById('decor-active-index');
 const decorTotalCount = document.getElementById('decor-total-count');
 
+const PEXELS_API_KEY = 'gdSbKXJR7lYB0uAB1oOOwsMMr6rdsBhoLbkcO6rRrF8V9Hr6HCutHMgm';
+
+// Pexels Search elements
+const methodPexels = document.getElementById('method-pexels');
+const pexelsSearchContainer = document.getElementById('pexels-search-container');
+const pexelsQueryInput = document.getElementById('pexels-query-input');
+const btnPexelsSearch = document.getElementById('btn-pexels-search');
+const pexelsSearchResults = document.getElementById('pexels-search-results');
+const pexelsSearchStatus = document.getElementById('pexels-search-status');
+
 // Render Card Elements inside Track
 function renderCards() {
     track.innerHTML = '';
@@ -239,10 +249,10 @@ function enterStoryMode() {
     
     // Populate details panel
     const activeCard = cards[activeIndex];
-    storyTitle.innerHTML = escapeHTML(activeCard.title);
-    storyDesc.innerHTML = escapeHTML(activeCard.desc);
-    storyLocation.innerHTML = escapeHTML(activeCard.location || 'Unknown Location');
-    storyCamera.innerHTML = escapeHTML(activeCard.camera || 'Unknown Camera');
+    storyTitle.textContent = activeCard.title;
+    storyDesc.textContent = activeCard.desc;
+    storyLocation.textContent = activeCard.location || 'Unknown Location';
+    storyCamera.textContent = activeCard.camera || 'Unknown Camera';
     
     // Add class to container to trigger CSS transitions
     appContainer.classList.add('story-mode');
@@ -556,15 +566,28 @@ const urlUploadForm = document.getElementById('url-upload-form');
 methodFile.addEventListener('click', () => {
     methodFile.classList.add('active');
     methodUrl.classList.remove('active');
+    methodPexels.classList.remove('active');
     fileUploadContainer.classList.remove('hidden');
     urlUploadForm.classList.add('hidden');
+    pexelsSearchContainer.classList.add('hidden');
 });
 
 methodUrl.addEventListener('click', () => {
     methodUrl.classList.add('active');
     methodFile.classList.remove('active');
+    methodPexels.classList.remove('active');
     urlUploadForm.classList.remove('hidden');
     fileUploadContainer.classList.add('hidden');
+    pexelsSearchContainer.classList.add('hidden');
+});
+
+methodPexels.addEventListener('click', () => {
+    methodPexels.classList.add('active');
+    methodFile.classList.remove('active');
+    methodUrl.classList.remove('active');
+    pexelsSearchContainer.classList.remove('hidden');
+    fileUploadContainer.classList.add('hidden');
+    urlUploadForm.classList.add('hidden');
 });
 
 // Render Image list in Settings Panel
@@ -719,8 +742,103 @@ btnNext.addEventListener('click', () => {
 // Bind Back to Gallery button click listener
 btnBackToGallery.addEventListener('click', exitStoryMode);
 
+// Fetch curated photos from Pexels API to initialize the gallery
+async function loadPexelsCurated() {
+    try {
+        const response = await fetch('https://api.pexels.com/v1/curated?per_page=10', {
+            headers: { Authorization: PEXELS_API_KEY }
+        });
+        if (!response.ok) throw new Error('API request failed');
+        const data = await response.json();
+        if (data.photos && data.photos.length > 0) {
+            cards = data.photos.map(photo => ({
+                id: photo.id,
+                src: photo.src.portrait || photo.src.large,
+                title: photo.alt || 'Pexels Exhibition',
+                desc: `Photo by ${photo.photographer} on Pexels. ${photo.alt || ''}`,
+                color: photo.avg_color || '#1b203a',
+                location: 'Pexels Curated',
+                camera: `Photographer: ${photo.photographer}`
+            }));
+            activeIndex = Math.floor(cards.length / 2); // Set default middle index
+            renderCards();
+            renderImageList();
+        }
+    } catch (err) {
+        console.warn('Pexels Curated load failed, falling back to local presets:', err);
+        // Fallback to local default cards (cards array already holds defaultCards)
+        renderCards();
+        renderImageList();
+    }
+}
+
+// Search photos on Pexels API
+async function searchPexels() {
+    const query = pexelsQueryInput.value.trim();
+    if (!query) return;
+
+    pexelsSearchStatus.textContent = 'Searching Pexels...';
+    pexelsSearchStatus.classList.remove('hidden');
+    pexelsSearchResults.innerHTML = '';
+
+    try {
+        const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=12`, {
+            headers: { Authorization: PEXELS_API_KEY }
+        });
+        if (!response.ok) throw new Error('Search failed');
+        const data = await response.json();
+        
+        pexelsSearchStatus.classList.add('hidden');
+        if (!data.photos || data.photos.length === 0) {
+            pexelsSearchStatus.textContent = 'No results found.';
+            pexelsSearchStatus.classList.remove('hidden');
+            return;
+        }
+
+        data.photos.forEach(photo => {
+            const thumb = document.createElement('div');
+            thumb.className = 'pexels-thumb';
+            thumb.innerHTML = `<img src="${escapeHTML(photo.src.tiny)}" alt="${escapeHTML(photo.alt)}">`;
+            
+            thumb.addEventListener('click', () => {
+                const newCard = {
+                    id: photo.id,
+                    src: photo.src.portrait || photo.src.large,
+                    title: photo.alt || 'Pexels Photo',
+                    desc: `Photo by ${photo.photographer} on Pexels. ${photo.alt || ''}`,
+                    color: photo.avg_color || '#1b203a',
+                    location: 'Pexels Search',
+                    camera: `Photographer: ${photo.photographer}`
+                };
+                cards.push(newCard);
+                activeIndex = cards.length - 1; // Focus the newly added card
+                renderCards();
+                renderImageList();
+                
+                // Reset search input and results
+                pexelsQueryInput.value = '';
+                pexelsSearchResults.innerHTML = '';
+            });
+
+            pexelsSearchResults.appendChild(thumb);
+        });
+    } catch (err) {
+        console.error(err);
+        pexelsSearchStatus.textContent = 'Error fetching search results.';
+        pexelsSearchStatus.classList.remove('hidden');
+    }
+}
+
+// Bind Pexels Search events
+btnPexelsSearch.addEventListener('click', searchPexels);
+pexelsQueryInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        searchPexels();
+    }
+});
+
 // Init render on window load
 window.addEventListener('DOMContentLoaded', () => {
-    renderCards();
-    renderImageList();
+    loadPexelsCurated();
 });

@@ -525,6 +525,7 @@ body {
 .highlight {
     color: var(--accent);
     text-decoration: underline;
+    cursor: pointer;
 }
 
 .url-form {
@@ -966,9 +967,9 @@ body {
     flex-grow: 1;
 }
 
-.pexels-search-btn {
-    width: auto !important;
-    padding: 0 16px !important;
+.submit-btn.pexels-search-btn {
+    width: auto;
+    padding: 0 16px;
 }
 
 .pexels-grid {
