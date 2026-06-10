@@ -353,7 +353,7 @@ body {
 .control-panel {
     position: fixed;
     top: 0;
-    right: calc(-1 * var(--panel-width));
+    right: 0;
     width: var(--panel-width);
     height: 100vh;
     background: rgba(10, 10, 15, 0.75);
@@ -363,12 +363,13 @@ body {
     box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
-    transition: right 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    transform: translateX(100%);
+    transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
     z-index: 10;
 }
 
 .control-panel.open {
-    right: 0;
+    transform: translateX(0);
 }
 
 .panel-header {
@@ -405,6 +406,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 30px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
 .settings-section {
@@ -442,6 +445,17 @@ body {
     border-radius: 2px;
     outline: none;
     -webkit-appearance: none;
+}
+
+.slider-group input[type="range"]:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 2px;
+}
+
+.slider-group input[type="range"]:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
 }
 
 .slider-group input[type="range"]::-webkit-slider-thumb {
@@ -561,6 +575,8 @@ body {
     max-height: 250px;
     overflow-y: auto;
     padding-right: 5px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
 .image-item {
