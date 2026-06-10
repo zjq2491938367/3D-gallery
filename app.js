@@ -761,9 +761,10 @@ async function loadPexelsCurated() {
                 camera: `Photographer: ${photo.photographer}`
             }));
             activeIndex = Math.floor(cards.length / 2); // Set default middle index
-            renderCards();
-            renderImageList();
         }
+        // Render cards regardless of whether Pexels photos loaded or fell back
+        renderCards();
+        renderImageList();
     } catch (err) {
         console.warn('Pexels Curated load failed, falling back to local presets:', err);
         // Fallback to local default cards (cards array already holds defaultCards)
@@ -780,6 +781,10 @@ async function searchPexels() {
     pexelsSearchStatus.textContent = 'Searching Pexels...';
     pexelsSearchStatus.classList.remove('hidden');
     pexelsSearchResults.innerHTML = '';
+    
+    // Disable to prevent race conditions
+    btnPexelsSearch.disabled = true;
+    pexelsQueryInput.disabled = true;
 
     try {
         const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=12`, {
@@ -826,6 +831,10 @@ async function searchPexels() {
         console.error(err);
         pexelsSearchStatus.textContent = 'Error fetching search results.';
         pexelsSearchStatus.classList.remove('hidden');
+    } finally {
+        // Re-enable inputs
+        btnPexelsSearch.disabled = false;
+        pexelsQueryInput.disabled = false;
     }
 }
 
