@@ -157,7 +157,16 @@ function renderPagination() {
 // Calculate and Apply 3D Projections dynamically
 function updateCoverflow() {
     cardEls.forEach((cardEl, index) => {
-        const offset = index - activeIndex;
+        let offset = index - activeIndex;
+        
+        // Circular wrap-around offset calculation to enable infinite circular loop
+        const half = cards.length / 2;
+        if (offset > half) {
+            offset -= cards.length;
+        } else if (offset < -half) {
+            offset += cards.length;
+        }
+        
         const absOffset = Math.abs(offset);
 
         if (offset === 0) {
