@@ -224,12 +224,204 @@ function prevCard() {
     }
 }
 
+// Drag & Swipe Interaction State
+let isDragging = false;
+let startX = 0;
+let currentX = 0;
+let dragOffset = 0;
+let velocity = 0;
+let lastTime = 0;
+let lastX = 0;
+let animationId = null;
+
+// Bind mouse and touch track listeners
+track.addEventListener('mousedown', dragStart);
+window.addEventListener('mousemove', dragMove);
+window.addEventListener('mouseup', dragEnd);
+
+track.addEventListener('touchstart', dragStart, { passive: true });
+window.addEventListener('touchmove', dragMove, { passive: false });
+window.addEventListener('touchend', dragEnd);
+
+function dragStart(e) {
+    if (e.target.closest('.btn-flip-back')) return; // Ignore if back button clicked
+    
+    const activeCardEl = document.querySelector('.card.active');
+    if (activeCardEl && activeCardEl.classList.contains('flipped')) return; // No drag on flipped card
+
+    isDragging = true;
+    startX = getPositionX(e);
+    lastX = startX;
+    lastTime = performance.now();
+    velocity = 0;
+    dragOffset = 0;
+
+    if (animationId) cancelAnimationFrame(animationId);
+    resetAutoplay();
+}
+
+function dragMove(e) {
+    if (!isDragging) return;
+
+    currentX = getPositionX(e);
+    const currentTime = performance.now();
+    const dt = currentTime - lastTime;
+    const dx = currentX - lastX;
+
+    if (dt > 0) {
+        velocity = dx / dt; // pixels per millisecond
+    }
+
+    dragOffset = currentX - startX;
+    
+    // Calculate how many indices to shift based on drag displacement
+    const threshold = 120; // threshold pixels to trigger slide shift
+    if (Math.abs(dragOffset) > threshold) {
+        if (dragOffset > 0) {
+            prevCard();
+        } else {
+            nextCard();
+        }
+        isDragging = false; // complete transition
+    }
+
+    lastX = currentX;
+    lastTime = currentTime;
+}
+
+function dragEnd(e) {
+    if (!isDragging) return;
+    isDragging = false;
+
+    // Handle inertia flick if mouse dragged quickly
+    const flickSpeed = 0.5; // px/ms threshold
+    if (Math.abs(velocity) > flickSpeed) {
+        if (velocity > 0) {
+            prevCard();
+        } else {
+            nextCard();
+        }
+    }
+}
+
+function getPositionX(e) {
+    return e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+}
+
+// Keyboard Arrow navigation
+window.addEventListener('keydown', (e) => {
+    if (document.activeElement.tagName === 'INPUT') return; // Ignore if typing in inputs
+    if (e.key === 'ArrowLeft') {
+        prevCard();
+        resetAutoplay();
+    } else if (e.key === 'ArrowRight') {
+        nextCard();
+        resetAutoplay();
+    }
+});
+
+// Mouse Wheel navigation
+let wheelTimeout = null;
+track.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (wheelTimeout) return; // Debounce wheel events
+    
+    if (e.deltaX > 20 || e.deltaY > 20) {
+        nextCard();
+        resetAutoplay();
+    } else if (e.deltaX < -20 || e.deltaY < -20) {
+        prevCard();
+        resetAutoplay();
+    }
+    
+    wheelTimeout = setTimeout(() => {
+        wheelTimeout = null;
+    }, 350);
+}, { passive: false });
+
+// Hover Tilt 3D Parallax on Active Card
+window.addEventListener('mousemove', (e) => {
+    const activeCardEl = document.querySelector('.card.active');
+    if (!activeCardEl || activeCardEl.classList.contains('flipped')) return;
+
+    const rect = activeCardEl.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Only apply tilt if hover is within card boundaries
+    if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateY = ((x - centerX) / centerX) * 12; // max tilt 12deg
+        const rotateX = -((y - centerY) / centerY) * 12;
+
+        const cardInner = activeCardEl.querySelector('.card-inner');
+        if (cardInner) {
+            cardInner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        }
+    } else {
+        // Reset card-inner style if cursor leaves card
+        const cardInner = activeCardEl.querySelector('.card-inner');
+        if (cardInner && !activeCardEl.classList.contains('flipped')) {
+            cardInner.style.transform = '';
+        }
+    }
+});
+
+// Autoplay functionality
+function startAutoplay() {
+    isAutoplay = true;
+    playIcon.classList.add('hidden');
+    pauseIcon.classList.remove('hidden');
+    autoplayInterval = setInterval(nextCard, paramAutoplay * 1000);
+}
+
+function stopAutoplay() {
+    isAutoplay = false;
+    playIcon.classList.remove('hidden');
+    pauseIcon.classList.add('hidden');
+    if (autoplayInterval) {
+        clearInterval(autoplayInterval);
+        autoplayInterval = null;
+    }
+}
+
+function resetAutoplay() {
+    if (isAutoplay) {
+        stopAutoplay();
+        startAutoplay();
+    }
+}
+
+btnPlay.addEventListener('click', () => {
+    if (isAutoplay) {
+        stopAutoplay();
+    } else {
+        startAutoplay();
+    }
+});
+
+// Pause autoplay on hovering the cover flow
+track.addEventListener('mouseenter', () => {
+    if (isAutoplay && autoplayInterval) {
+        clearInterval(autoplayInterval);
+    }
+});
+
+track.addEventListener('mouseleave', () => {
+    if (isAutoplay) {
+        autoplayInterval = setInterval(nextCard, paramAutoplay * 1000);
+    }
+});
+
 // Init Event Listeners for Nav buttons
 btnPrev.addEventListener('click', () => {
     prevCard();
+    resetAutoplay();
 });
 btnNext.addEventListener('click', () => {
     nextCard();
+    resetAutoplay();
 });
 
 // Init render on window load
