@@ -811,8 +811,13 @@ body {
 }
 
 .app-container.story-mode .card.active {
-    transform: translate3d(0, 0, 180px) rotateY(0deg) scale(1.15) !important;
+    transform: translate3d(0, 0, 180px) rotateY(0deg) scale(1.45) !important;
     cursor: default;
+}
+
+.app-container.story-mode .card.active .card-front-overlay {
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 /* Viewport gridlines and margin elements */
