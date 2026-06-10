@@ -1,3 +1,17 @@
+// Helper to escape HTML characters for XSS prevention
+function escapeHTML(str) {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// Global Ambient Theme Colors
+const AMBIENT_COLORS = ['#1a1f3c', '#081e28', '#2b1b1a', '#281230', '#0c2210', '#1c1b30', '#3b2f1a'];
+
 // Preset Default Curated Photography Cards
 const defaultCards = [
     {
@@ -88,15 +102,15 @@ function renderCards() {
         cardEl.innerHTML = `
             <div class="card-inner">
                 <div class="card-front">
-                    <img src="${card.src}" alt="${card.title}">
+                    <img src="${escapeHTML(card.src)}" alt="${escapeHTML(card.title)}">
                     <div class="card-front-overlay">
-                        <h3>${card.title}</h3>
+                        <h3>${escapeHTML(card.title)}</h3>
                         <p>Click to examine details</p>
                     </div>
                 </div>
                 <div class="card-back">
-                    <h3>${card.title}</h3>
-                    <p>${card.desc}</p>
+                    <h3>${escapeHTML(card.title)}</h3>
+                    <p>${escapeHTML(card.desc)}</p>
                     <button class="btn-flip-back">BACK TO GALLERY</button>
                 </div>
             </div>
@@ -499,9 +513,9 @@ function renderImageList() {
         const li = document.createElement('li');
         li.className = 'image-item';
         li.innerHTML = `
-            <img src="${card.src}" alt="${card.title}" class="image-item-thumb">
+            <img src="${escapeHTML(card.src)}" alt="${escapeHTML(card.title)}" class="image-item-thumb">
             <div class="image-item-info">
-                <div class="image-item-title">${card.title}</div>
+                <div class="image-item-title">${escapeHTML(card.title)}</div>
             </div>
             <button class="image-item-remove" data-index="${index}">&times;</button>
         `;
@@ -516,6 +530,8 @@ function renderImageList() {
 }
 
 function removeCard(index) {
+    if (!confirm('Are you sure you want to remove this image?')) return;
+
     if (cards.length <= 1) {
         alert('At least one image must be kept in the gallery!');
         return;
@@ -527,6 +543,7 @@ function removeCard(index) {
         activeIndex = cards.length - 1;
     }
     
+    activeCardRect = null;
     renderCards();
     renderImageList();
 }
@@ -538,8 +555,7 @@ urlUploadForm.addEventListener('submit', (e) => {
     const title = document.getElementById('title-input').value || 'Unlabeled Card';
     
     // Extract a random dominant-looking ambient color based on current colors
-    const colorOptions = ['#1a1f3c', '#081e28', '#2b1b1a', '#281230', '#0c2210', '#1c1b30', '#3b2f1a'];
-    const randomColor = colorOptions[Math.floor(Math.random() * colorOptions.length)];
+    const randomColor = AMBIENT_COLORS[Math.floor(Math.random() * AMBIENT_COLORS.length)];
 
     const newCard = {
         id: Date.now(),
@@ -586,14 +602,22 @@ fileUploadContainer.addEventListener('drop', (e) => {
 
 function handleFileSelect() {
     const file = fileInput.files[0];
-    if (file && file.type.startsWith('image/')) {
+    if (!file) return;
+
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_SIZE) {
+        alert('File size exceeds the 5MB limit. Please upload a smaller image.');
+        fileInput.value = '';
+        return;
+    }
+
+    if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (e) => {
             const src = e.target.result;
             const title = file.name.split('.')[0] || 'Local Image';
 
-            const colorOptions = ['#1a1f3c', '#081e28', '#2b1b1a', '#281230', '#0c2210', '#1c1b30', '#3b2f1a'];
-            const randomColor = colorOptions[Math.floor(Math.random() * colorOptions.length)];
+            const randomColor = AMBIENT_COLORS[Math.floor(Math.random() * AMBIENT_COLORS.length)];
 
             const newCard = {
                 id: Date.now(),
