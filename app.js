@@ -42,6 +42,8 @@ let cards = [...defaultCards];
 let activeIndex = 2; // Default center card
 let isAutoplay = false;
 let autoplayInterval = null;
+let cardEls = [];
+let dotEls = [];
 
 // 3D parameters (coefficients adjusted by slider)
 let paramSpacing = 100;
@@ -95,10 +97,17 @@ function renderCards() {
                 <div class="card-back">
                     <h3>${card.title}</h3>
                     <p>${card.desc}</p>
-                    <button class="btn-flip-back" onclick="event.stopPropagation(); flipCard(${index}, false)">BACK TO GALLERY</button>
+                    <button class="btn-flip-back">BACK TO GALLERY</button>
                 </div>
             </div>
         `;
+
+        // Flip back event
+        const flipBackBtn = cardEl.querySelector('.btn-flip-back');
+        flipBackBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            flipCard(index, false);
+        });
 
         // Flip card event
         cardEl.addEventListener('click', () => {
@@ -113,6 +122,8 @@ function renderCards() {
         track.appendChild(cardEl);
     });
 
+    cardEls = document.querySelectorAll('.card');
+
     renderPagination();
     updateCoverflow();
 }
@@ -126,11 +137,11 @@ function renderPagination() {
         dot.addEventListener('click', () => setActiveCard(index));
         pagination.appendChild(dot);
     });
+    dotEls = document.querySelectorAll('.dot');
 }
 
 // Calculate and Apply 3D Projections dynamically
 function updateCoverflow() {
-    const cardEls = document.querySelectorAll('.card');
     cardEls.forEach((cardEl, index) => {
         const offset = index - activeIndex;
         const absOffset = Math.abs(offset);
@@ -188,8 +199,7 @@ function setActiveCard(index) {
         activeIndex = index;
         
         // Update dot states
-        const dots = document.querySelectorAll('.dot');
-        dots.forEach((dot, idx) => {
+        dotEls.forEach((dot, idx) => {
             if (idx === activeIndex) dot.classList.add('active');
             else dot.classList.remove('active');
         });
