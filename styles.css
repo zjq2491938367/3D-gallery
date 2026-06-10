@@ -95,6 +95,7 @@ body {
     justify-content: center;
     cursor: grab;
     user-select: none;
+    transition: transform 0.65s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .coverflow-track:active {
@@ -677,3 +678,276 @@ body {
     border-radius: 16px;
     pointer-events: none;
 }
+
+/* Story Details Panel styling */
+.story-details-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 42%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 60px;
+    z-index: 8;
+    opacity: 0;
+    transform: translateX(60px);
+    pointer-events: none;
+    transition: opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1), 
+                transform 0.65s cubic-bezier(0.19, 1, 0.22, 1);
+    background: linear-gradient(to right, transparent, rgba(7, 7, 10, 0.8) 20%, rgba(7, 7, 10, 0.95) 100%);
+}
+
+.app-container.story-mode .story-details-panel {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+.story-details-panel h2 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #ffffff 30%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+}
+
+.story-detail-divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    margin-bottom: 24px;
+    box-shadow: 0 0 10px var(--accent);
+}
+
+.story-details-panel p {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-dim);
+    margin-bottom: 35px;
+    font-weight: 300;
+}
+
+.story-detail-metadata {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 45px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    padding: 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.meta-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+}
+
+.meta-label {
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.meta-value {
+    color: #fff;
+    font-weight: 600;
+}
+
+.btn-back-to-gallery {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    color: #fff;
+    font-family: var(--font-family);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.05em;
+}
+
+.btn-back-to-gallery:hover {
+    background: #fff;
+    color: var(--bg-dark);
+    border-color: #fff;
+    transform: translateX(-4px);
+}
+
+/* Animations for header, footer & cards in story-mode */
+.app-container.story-mode .gallery-header,
+.app-container.story-mode .gallery-footer,
+.app-container.story-mode .panel-toggle {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.app-container.story-mode .coverflow-track {
+    transform: translateX(-18vw);
+    pointer-events: none; /* Disable dragging when reading */
+}
+
+/* Override transform-style rules for non-active cards when in story-mode */
+.app-container.story-mode .card:not(.active) {
+    opacity: 0 !important;
+    transform: translate3d(0, 0, -400px) rotateY(0) scale(0.5) !important;
+    filter: blur(10px) !important;
+    pointer-events: none !important;
+}
+
+.app-container.story-mode .card.active {
+    transform: translate3d(0, 0, 180px) rotateY(0deg) scale(1.15) !important;
+    cursor: default;
+}
+
+/* Viewport gridlines and margin elements */
+.viewport-decor {
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity 0.5s cubic-bezier(0.19, 1, 0.22, 1), 
+                transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.viewport-gridline {
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.left-gridline {
+    left: 120px;
+}
+
+.right-gridline {
+    right: 120px;
+}
+
+.margin-branding-left {
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-180deg);
+    writing-mode: vertical-lr;
+    font-size: 0.65rem;
+    letter-spacing: 0.4em;
+    color: rgba(240, 240, 245, 0.25);
+    font-weight: 400;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.margin-counter-right {
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    font-family: 'Outfit', monospace;
+}
+
+.decor-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: rgba(240, 240, 245, 0.3);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.decor-active-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-shadow: 0 0 12px rgba(161, 196, 253, 0.3);
+    line-height: 1;
+    margin: 2px 0;
+}
+
+.decor-divider {
+    font-size: 0.75rem;
+    color: rgba(240, 240, 245, 0.2);
+}
+
+.decor-total-value {
+    font-size: 0.75rem;
+    color: rgba(240, 240, 245, 0.4);
+    font-weight: 400;
+}
+
+/* Viewfinder camera bracket overlay */
+.viewfinder-corners {
+    top: 15vh;
+    bottom: 15vh;
+    left: 140px;
+    right: 140px;
+}
+
+.corner-bracket {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid transparent;
+}
+
+.corner-bracket.top-left {
+    top: 0;
+    left: 0;
+    border-left-color: rgba(255, 255, 255, 0.12);
+    border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.corner-bracket.top-right {
+    top: 0;
+    right: 0;
+    border-right-color: rgba(255, 255, 255, 0.12);
+    border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.corner-bracket.bottom-left {
+    bottom: 0;
+    left: 0;
+    border-left-color: rgba(255, 255, 255, 0.12);
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+.corner-bracket.bottom-right {
+    bottom: 0;
+    right: 0;
+    border-right-color: rgba(255, 255, 255, 0.12);
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Hide decorations when reading story mode */
+.app-container.story-mode .viewport-decor {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Mobile Responsive adjustments - hide side items */
+@media (max-width: 900px) {
+    .viewport-gridline,
+    .margin-branding-left,
+    .margin-counter-right,
+    .viewfinder-corners {
+        display: none !important;
+    }
+}
+
