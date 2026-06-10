@@ -197,6 +197,7 @@ function flipCard(index, shouldFlip) {
 function setActiveCard(index) {
     if (index >= 0 && index < cards.length) {
         activeIndex = index;
+        activeCardRect = null; // Reset cached bounding rect
         
         // Update dot states
         dotEls.forEach((dot, idx) => {
@@ -232,7 +233,7 @@ let dragOffset = 0;
 let velocity = 0;
 let lastTime = 0;
 let lastX = 0;
-let animationId = null;
+let activeCardRect = null;
 
 // Bind mouse and touch track listeners
 track.addEventListener('mousedown', dragStart);
@@ -256,7 +257,6 @@ function dragStart(e) {
     velocity = 0;
     dragOffset = 0;
 
-    if (animationId) cancelAnimationFrame(animationId);
     resetAutoplay();
 }
 
@@ -289,7 +289,7 @@ function dragMove(e) {
     lastTime = currentTime;
 }
 
-function dragEnd(e) {
+function dragEnd() {
     if (!isDragging) return;
     isDragging = false;
 
@@ -340,18 +340,32 @@ track.addEventListener('wheel', (e) => {
 }, { passive: false });
 
 // Hover Tilt 3D Parallax on Active Card
-window.addEventListener('mousemove', (e) => {
+track.addEventListener('mouseenter', () => {
+    if (isAutoplay && autoplayInterval) {
+        clearInterval(autoplayInterval);
+        autoplayInterval = null;
+    }
+    const activeCardEl = document.querySelector('.card.active');
+    if (activeCardEl) {
+        activeCardRect = activeCardEl.getBoundingClientRect();
+    }
+});
+
+track.addEventListener('mousemove', (e) => {
     const activeCardEl = document.querySelector('.card.active');
     if (!activeCardEl || activeCardEl.classList.contains('flipped')) return;
 
-    const rect = activeCardEl.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    if (!activeCardRect) {
+        activeCardRect = activeCardEl.getBoundingClientRect();
+    }
+
+    const x = e.clientX - activeCardRect.left;
+    const y = e.clientY - activeCardRect.top;
 
     // Only apply tilt if hover is within card boundaries
-    if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
+    if (x >= 0 && x <= activeCardRect.width && y >= 0 && y <= activeCardRect.height) {
+        const centerX = activeCardRect.width / 2;
+        const centerY = activeCardRect.height / 2;
         const rotateY = ((x - centerX) / centerX) * 12; // max tilt 12deg
         const rotateX = -((y - centerY) / centerY) * 12;
 
@@ -368,11 +382,27 @@ window.addEventListener('mousemove', (e) => {
     }
 });
 
+track.addEventListener('mouseleave', () => {
+    if (isAutoplay) {
+        if (autoplayInterval) clearInterval(autoplayInterval);
+        autoplayInterval = setInterval(nextCard, paramAutoplay * 1000);
+    }
+    activeCardRect = null;
+    const activeCardEl = document.querySelector('.card.active');
+    if (activeCardEl) {
+        const cardInner = activeCardEl.querySelector('.card-inner');
+        if (cardInner && !activeCardEl.classList.contains('flipped')) {
+            cardInner.style.transform = '';
+        }
+    }
+});
+
 // Autoplay functionality
 function startAutoplay() {
     isAutoplay = true;
     playIcon.classList.add('hidden');
     pauseIcon.classList.remove('hidden');
+    if (autoplayInterval) clearInterval(autoplayInterval);
     autoplayInterval = setInterval(nextCard, paramAutoplay * 1000);
 }
 
@@ -398,19 +428,6 @@ btnPlay.addEventListener('click', () => {
         stopAutoplay();
     } else {
         startAutoplay();
-    }
-});
-
-// Pause autoplay on hovering the cover flow
-track.addEventListener('mouseenter', () => {
-    if (isAutoplay && autoplayInterval) {
-        clearInterval(autoplayInterval);
-    }
-});
-
-track.addEventListener('mouseleave', () => {
-    if (isAutoplay) {
-        autoplayInterval = setInterval(nextCard, paramAutoplay * 1000);
     }
 });
 
