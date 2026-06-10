@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Cover Flow Immersive Gallery</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Dynamic Ambient Glow Background -->
+    <div id="ambient-bg" class="ambient-bg"></div>
+
+    <!-- App Wrapper -->
+    <div class="app-container">
+        <!-- Header Logo / Title -->
+        <header class="gallery-header">
+            <h1>IMMERSIVE GALLERY</h1>
+            <p class="tagline">3D COVER FLOW EXHIBITION</p>
+        </header>
+
+        <!-- 3D Cover Flow Container -->
+        <main class="coverflow-container" id="coverflow-container">
+            <div class="coverflow-track" id="coverflow-track">
+                <!-- Cards will be dynamically rendered here -->
+            </div>
+        </main>
+
+        <!-- Bottom Control Bar -->
+        <footer class="gallery-footer">
+            <div class="navigation-controls">
+                <button id="btn-prev" class="nav-btn" aria-label="Previous image">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <button id="btn-play" class="nav-btn play-btn" aria-label="Toggle autoplay">
+                    <svg id="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <svg id="pause-icon" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                </button>
+                <button id="btn-next" class="nav-btn" aria-label="Next image">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+            </div>
+            <div class="pagination" id="pagination">
+                <!-- Indicators will be dynamically rendered here -->
+            </div>
+        </footer>
+
+        <!-- Sidebar Settings Drawer Toggle Button -->
+        <button id="btn-toggle-panel" class="panel-toggle" aria-label="Open settings panel">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+
+        <!-- Glassmorphism Settings Panel -->
+        <aside id="control-panel" class="control-panel">
+            <div class="panel-header">
+                <h2>GALLERY SETTINGS</h2>
+                <button id="btn-close-panel" class="close-btn">&times;</button>
+            </div>
+            <div class="panel-content">
+                <!-- Section 1: 3D Projection Adjustment -->
+                <div class="settings-section">
+                    <h3>3D PROJECTION</h3>
+                    <div class="slider-group">
+                        <label for="slider-spacing">Card Spacing: <span id="val-spacing">100</span>px</label>
+                        <input type="range" id="slider-spacing" min="50" max="250" value="100">
+                    </div>
+                    <div class="slider-group">
+                        <label for="slider-angle">Rotation Angle: <span id="val-angle">60</span>°</label>
+                        <input type="range" id="slider-angle" min="20" max="85" value="60">
+                    </div>
+                    <div class="slider-group">
+                        <label for="slider-depth">Z-Depth Offset: <span id="val-depth">180</span>px</label>
+                        <input type="range" id="slider-depth" min="50" max="300" value="180">
+                    </div>
+                    <div class="slider-group">
+                        <label for="slider-autoplay">Autoplay Delay: <span id="val-autoplay">3.5</span>s</label>
+                        <input type="range" id="slider-autoplay" min="1" max="10" step="0.5" value="3.5">
+                    </div>
+                </div>
+
+                <!-- Section 2: Upload / Manage Images -->
+                <div class="settings-section">
+                    <h3>ADD CUSTOM IMAGES</h3>
+                    
+                    <!-- Tab selector for File or URL -->
+                    <div class="add-methods">
+                        <button id="method-file" class="method-tab active">Local File</button>
+                        <button id="method-url" class="method-tab">Image URL</button>
+                    </div>
+
+                    <!-- Local File drag and drop -->
+                    <div id="file-upload-container" class="upload-zone">
+                        <input type="file" id="file-input" accept="image/*" class="hidden-input">
+                        <div class="drag-message">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                            <p>Drag & drop image here or <span class="highlight">Browse</span></p>
+                        </div>
+                    </div>
+
+                    <!-- URL Input form -->
+                    <form id="url-upload-form" class="url-form hidden">
+                        <input type="url" id="url-input" placeholder="https://example.com/photo.jpg" required>
+                        <input type="text" id="title-input" placeholder="Image Title (Optional)">
+                        <button type="submit" class="submit-btn">Add Image</button>
+                    </form>
+                </div>
+
+                <!-- Section 3: Manage Image List -->
+                <div class="settings-section">
+                    <h3>MANAGE IMAGES</h3>
+                    <ul id="image-list" class="image-list">
+                        <!-- List items populated dynamically -->
+                    </ul>
+                </div>
+            </div>
+        </aside>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
