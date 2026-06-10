@@ -19,35 +19,45 @@ const defaultCards = [
         src: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
         title: 'Silicon Matrix',
         desc: 'A futuristic visualization of neural connections and microcircuitry emitting high-energy neon rays.',
-        color: '#1a1f3c'
+        color: '#1a1f3c',
+        location: 'Tokyo, Japan',
+        camera: 'Sony Alpha 7R V • 35mm f/1.4'
     },
     {
         id: 2,
         src: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
         title: 'Geometric Monolith',
         desc: 'Towering office skyscrapers captured in high contrast glass and steel, mapping the sky in grids.',
-        color: '#081e28'
+        color: '#081e28',
+        location: 'Chicago, USA',
+        camera: 'Hasselblad X2D 100C • 28mm f/4'
     },
     {
         id: 3,
         src: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
         title: 'Ethereal Shoreline',
         desc: 'Sunset cascading golden ripples across a gentle, mirror-like tide at the edge of the Pacific.',
-        color: '#2b1b1a'
+        color: '#2b1b1a',
+        location: 'Big Sur, California',
+        camera: 'Leica M11 • 50mm f/2'
     },
     {
         id: 4,
         src: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=800&q=80',
         title: 'Liquid Stardust',
         desc: 'Abstract marble flows blending cosmic purples with fluorescent gold veins, frozen in time.',
-        color: '#281230'
+        color: '#281230',
+        location: 'Studio Macro, Paris',
+        camera: 'Fujifilm GFX 100S • 120mm f/4'
     },
     {
         id: 5,
         src: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80',
         title: 'Primeval Breath',
         desc: 'Misty sunbeams slicing through ancient Redwood branches in the early, dew-drenched morning.',
-        color: '#0c2210'
+        color: '#0c2210',
+        location: 'Redwood Park, USA',
+        camera: 'Canon EOS R5 • 24-70mm f/2.8'
     }
 ];
 
@@ -58,6 +68,8 @@ let isAutoplay = false;
 let autoplayInterval = null;
 let cardEls = [];
 let dotEls = [];
+let isStoryMode = false;
+let wasAutoplayBeforeStory = false;
 
 // 3D parameters (coefficients adjusted by slider)
 let paramSpacing = 100;
@@ -91,6 +103,17 @@ const btnTogglePanel = document.getElementById('btn-toggle-panel');
 const btnClosePanel = document.getElementById('btn-close-panel');
 const imageList = document.getElementById('image-list');
 
+// Story Mode Elements
+const appContainer = document.querySelector('.app-container');
+const storyDetailsPanel = document.getElementById('story-details-panel');
+const storyTitle = document.getElementById('story-detail-title');
+const storyDesc = document.getElementById('story-detail-desc');
+const storyLocation = document.getElementById('story-detail-location');
+const storyCamera = document.getElementById('story-detail-camera');
+const btnBackToGallery = document.getElementById('btn-back-to-gallery');
+const decorActiveIndex = document.getElementById('decor-active-index');
+const decorTotalCount = document.getElementById('decor-total-count');
+
 // Render Card Elements inside Track
 function renderCards() {
     track.innerHTML = '';
@@ -105,29 +128,17 @@ function renderCards() {
                     <img src="${escapeHTML(card.src)}" alt="${escapeHTML(card.title)}">
                     <div class="card-front-overlay">
                         <h3>${escapeHTML(card.title)}</h3>
-                        <p>Click to examine details</p>
+                        <p>Click to view story</p>
                     </div>
-                </div>
-                <div class="card-back">
-                    <h3>${escapeHTML(card.title)}</h3>
-                    <p>${escapeHTML(card.desc)}</p>
-                    <button class="btn-flip-back">BACK TO GALLERY</button>
                 </div>
             </div>
         `;
 
-        // Flip back event
-        const flipBackBtn = cardEl.querySelector('.btn-flip-back');
-        flipBackBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            flipCard(index, false);
-        });
-
-        // Flip card event
+        // Click event to enter story mode or set active card
         cardEl.addEventListener('click', () => {
+            if (isStoryMode) return;
             if (index === activeIndex) {
-                const isFlipped = cardEl.classList.contains('flipped');
-                flipCard(index, !isFlipped);
+                enterStoryMode();
             } else {
                 setActiveCard(index);
             }
@@ -140,6 +151,7 @@ function renderCards() {
 
     renderPagination();
     updateCoverflow();
+    updateDecorations();
 }
 
 // Render indicators
@@ -204,20 +216,55 @@ function updateAmbientBg() {
     }
 }
 
-// Flip Active Card to show information on Back
-function flipCard(index, shouldFlip) {
-    const cardEl = document.querySelector(`.card[data-index="${index}"]`);
-    if (cardEl && index === activeIndex) {
-        if (shouldFlip) {
-            cardEl.classList.add('flipped');
-        } else {
-            cardEl.classList.remove('flipped');
-        }
+// Update left/right margin dynamic indicator elements
+function updateDecorations() {
+    if (decorActiveIndex && decorTotalCount) {
+        decorActiveIndex.textContent = String(activeIndex + 1).padStart(2, '0');
+        decorTotalCount.textContent = String(cards.length).padStart(2, '0');
+    }
+}
+
+// Enter fullscreen story mode
+function enterStoryMode() {
+    if (isStoryMode) return;
+    isStoryMode = true;
+    
+    // Remember autoplay state and pause it
+    wasAutoplayBeforeStory = isAutoplay;
+    if (isAutoplay) {
+        stopAutoplay();
+        // stopAutoplay sets isAutoplay to false, so restore the flag for memory
+        wasAutoplayBeforeStory = true;
+    }
+    
+    // Populate details panel
+    const activeCard = cards[activeIndex];
+    storyTitle.innerHTML = escapeHTML(activeCard.title);
+    storyDesc.innerHTML = escapeHTML(activeCard.desc);
+    storyLocation.innerHTML = escapeHTML(activeCard.location || 'Unknown Location');
+    storyCamera.innerHTML = escapeHTML(activeCard.camera || 'Unknown Camera');
+    
+    // Add class to container to trigger CSS transitions
+    appContainer.classList.add('story-mode');
+}
+
+// Exit story mode and return to gallery
+function exitStoryMode() {
+    if (!isStoryMode) return;
+    isStoryMode = false;
+    
+    // Remove class from container to transition back
+    appContainer.classList.remove('story-mode');
+    
+    // Resume autoplay if it was active before
+    if (wasAutoplayBeforeStory) {
+        startAutoplay();
     }
 }
 
 // Shift to active card
 function setActiveCard(index) {
+    if (isStoryMode) return;
     if (index >= 0 && index < cards.length) {
         activeIndex = index;
         activeCardRect = null; // Reset cached bounding rect
@@ -229,6 +276,7 @@ function setActiveCard(index) {
         });
 
         updateCoverflow();
+        updateDecorations();
     }
 }
 
@@ -268,11 +316,8 @@ window.addEventListener('touchmove', dragMove, { passive: false });
 window.addEventListener('touchend', dragEnd);
 
 function dragStart(e) {
-    if (e.target.closest('.btn-flip-back')) return; // Ignore if back button clicked
+    if (isStoryMode) return; // Guard
     
-    const activeCardEl = document.querySelector('.card.active');
-    if (activeCardEl && activeCardEl.classList.contains('flipped')) return; // No drag on flipped card
-
     isDragging = true;
     startX = getPositionX(e);
     lastX = startX;
@@ -284,6 +329,7 @@ function dragStart(e) {
 }
 
 function dragMove(e) {
+    if (isStoryMode) return; // Guard
     if (!isDragging) return;
 
     currentX = getPositionX(e);
@@ -333,6 +379,7 @@ function getPositionX(e) {
 
 // Keyboard Arrow navigation
 window.addEventListener('keydown', (e) => {
+    if (isStoryMode) return; // Guard
     if (document.activeElement.tagName === 'INPUT') return; // Ignore if typing in inputs
     if (e.key === 'ArrowLeft') {
         prevCard();
@@ -346,6 +393,7 @@ window.addEventListener('keydown', (e) => {
 // Mouse Wheel navigation
 let wheelTimeout = null;
 track.addEventListener('wheel', (e) => {
+    if (isStoryMode) return; // Guard
     e.preventDefault();
     if (wheelTimeout) return; // Debounce wheel events
     
@@ -364,6 +412,7 @@ track.addEventListener('wheel', (e) => {
 
 // Hover Tilt 3D Parallax on Active Card
 track.addEventListener('mouseenter', () => {
+    if (isStoryMode) return; // Guard
     if (isAutoplay && autoplayInterval) {
         clearInterval(autoplayInterval);
         autoplayInterval = null;
@@ -375,8 +424,9 @@ track.addEventListener('mouseenter', () => {
 });
 
 track.addEventListener('mousemove', (e) => {
+    if (isStoryMode) return; // Guard
     const activeCardEl = document.querySelector('.card.active');
-    if (!activeCardEl || activeCardEl.classList.contains('flipped')) return;
+    if (!activeCardEl) return;
 
     if (!activeCardRect) {
         activeCardRect = activeCardEl.getBoundingClientRect();
@@ -399,13 +449,14 @@ track.addEventListener('mousemove', (e) => {
     } else {
         // Reset card-inner style if cursor leaves card
         const cardInner = activeCardEl.querySelector('.card-inner');
-        if (cardInner && !activeCardEl.classList.contains('flipped')) {
+        if (cardInner) {
             cardInner.style.transform = '';
         }
     }
 });
 
 track.addEventListener('mouseleave', () => {
+    if (isStoryMode) return; // Guard
     if (isAutoplay) {
         if (autoplayInterval) clearInterval(autoplayInterval);
         autoplayInterval = setInterval(nextCard, paramAutoplay * 1000);
@@ -414,7 +465,7 @@ track.addEventListener('mouseleave', () => {
     const activeCardEl = document.querySelector('.card.active');
     if (activeCardEl) {
         const cardInner = activeCardEl.querySelector('.card-inner');
-        if (cardInner && !activeCardEl.classList.contains('flipped')) {
+        if (cardInner) {
             cardInner.style.transform = '';
         }
     }
@@ -456,6 +507,7 @@ btnPlay.addEventListener('click', () => {
 
 // Toggle control drawer
 btnTogglePanel.addEventListener('click', () => {
+    if (isStoryMode) return; // Guard
     controlPanel.classList.add('open');
 });
 
@@ -571,7 +623,9 @@ urlUploadForm.addEventListener('submit', (e) => {
         src: src,
         title: title,
         desc: 'A user submitted custom network image added to the dynamic cover flow carousel stack.',
-        color: randomColor
+        color: randomColor,
+        location: 'Internet',
+        camera: 'Unknown Source'
     };
 
     cards.push(newCard);
@@ -633,7 +687,9 @@ function handleFileSelect() {
                 src: src,
                 title: title,
                 desc: `Uploaded file: ${file.name} (type: ${file.type}, size: ${(file.size / 1024).toFixed(1)}KB) displayed on 3D Cover Flow layout.`,
-                color: randomColor
+                color: randomColor,
+                location: 'Local Upload',
+                camera: 'Unknown Camera'
             };
 
             cards.push(newCard);
@@ -650,13 +706,18 @@ function handleFileSelect() {
 
 // Init Event Listeners for Nav buttons
 btnPrev.addEventListener('click', () => {
+    if (isStoryMode) return;
     prevCard();
     resetAutoplay();
 });
 btnNext.addEventListener('click', () => {
+    if (isStoryMode) return;
     nextCard();
     resetAutoplay();
 });
+
+// Bind Back to Gallery button click listener
+btnBackToGallery.addEventListener('click', exitStoryMode);
 
 // Init render on window load
 window.addEventListener('DOMContentLoaded', () => {
