@@ -15,6 +15,28 @@
 
     <!-- App Wrapper -->
     <div class="app-container">
+        <!-- Viewport Gridlines and Margins (Option B) -->
+        <div class="viewport-decor viewport-gridline left-gridline"></div>
+        <div class="viewport-decor viewport-gridline right-gridline"></div>
+
+        <div class="viewport-decor margin-branding-left">
+            <span>EXHIBITION 2026 // IMMERSIVE GALLERY</span>
+        </div>
+
+        <div class="viewport-decor margin-counter-right">
+            <span class="decor-label">INDEX</span>
+            <span id="decor-active-index" class="decor-active-value">03</span>
+            <span class="decor-divider">—</span>
+            <span id="decor-total-count" class="decor-total-value">05</span>
+        </div>
+
+        <div class="viewport-decor viewfinder-corners">
+            <div class="corner-bracket top-left"></div>
+            <div class="corner-bracket top-right"></div>
+            <div class="corner-bracket bottom-left"></div>
+            <div class="corner-bracket bottom-right"></div>
+        </div>
+
         <!-- Header Logo / Title -->
         <header class="gallery-header">
             <h1>IMMERSIVE GALLERY</h1>
@@ -116,6 +138,27 @@
                 </div>
             </div>
         </aside>
+
+        <!-- Dynamic Story Details Panel -->
+        <div id="story-details-panel" class="story-details-panel">
+            <h2 id="story-detail-title"></h2>
+            <div class="story-detail-divider"></div>
+            <p id="story-detail-desc"></p>
+            <div class="story-detail-metadata">
+                <div class="meta-item">
+                    <span class="meta-label">Location</span>
+                    <span id="story-detail-location" class="meta-value"></span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Camera</span>
+                    <span id="story-detail-camera" class="meta-value"></span>
+                </div>
+            </div>
+            <button id="btn-back-to-gallery" class="btn-back-to-gallery">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Back to Gallery
+            </button>
+        </div>
     </div>
     <script src="app.js"></script>
 </body>
