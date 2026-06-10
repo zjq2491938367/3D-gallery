@@ -431,6 +431,190 @@ btnPlay.addEventListener('click', () => {
     }
 });
 
+// Toggle control drawer
+btnTogglePanel.addEventListener('click', () => {
+    controlPanel.classList.add('open');
+});
+
+btnClosePanel.addEventListener('click', () => {
+    controlPanel.classList.remove('open');
+});
+
+// Close when clicking outside panel
+document.addEventListener('click', (e) => {
+    if (!controlPanel.contains(e.target) && e.target !== btnTogglePanel && !btnTogglePanel.contains(e.target)) {
+        controlPanel.classList.remove('open');
+    }
+});
+
+// Sliders binding listeners
+sliderSpacing.addEventListener('input', (e) => {
+    paramSpacing = parseInt(e.target.value);
+    valSpacing.textContent = paramSpacing;
+    updateCoverflow();
+});
+
+sliderAngle.addEventListener('input', (e) => {
+    paramAngle = parseInt(e.target.value);
+    valAngle.textContent = paramAngle;
+    updateCoverflow();
+});
+
+sliderDepth.addEventListener('input', (e) => {
+    paramDepth = parseInt(e.target.value);
+    valDepth.textContent = paramDepth;
+    updateCoverflow();
+});
+
+sliderAutoplay.addEventListener('input', (e) => {
+    paramAutoplay = parseFloat(e.target.value);
+    valAutoplay.textContent = paramAutoplay.toFixed(1);
+    resetAutoplay();
+});
+
+// Tab selector logic
+const methodFile = document.getElementById('method-file');
+const methodUrl = document.getElementById('method-url');
+const fileUploadContainer = document.getElementById('file-upload-container');
+const urlUploadForm = document.getElementById('url-upload-form');
+
+methodFile.addEventListener('click', () => {
+    methodFile.classList.add('active');
+    methodUrl.classList.remove('active');
+    fileUploadContainer.classList.remove('hidden');
+    urlUploadForm.classList.add('hidden');
+});
+
+methodUrl.addEventListener('click', () => {
+    methodUrl.classList.add('active');
+    methodFile.classList.remove('active');
+    urlUploadForm.classList.remove('hidden');
+    fileUploadContainer.classList.add('hidden');
+});
+
+// Render Image list in Settings Panel
+function renderImageList() {
+    imageList.innerHTML = '';
+    cards.forEach((card, index) => {
+        const li = document.createElement('li');
+        li.className = 'image-item';
+        li.innerHTML = `
+            <img src="${card.src}" alt="${card.title}" class="image-item-thumb">
+            <div class="image-item-info">
+                <div class="image-item-title">${card.title}</div>
+            </div>
+            <button class="image-item-remove" data-index="${index}">&times;</button>
+        `;
+
+        li.querySelector('.image-item-remove').addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            removeCard(idx);
+        });
+
+        imageList.appendChild(li);
+    });
+}
+
+function removeCard(index) {
+    if (cards.length <= 1) {
+        alert('At least one image must be kept in the gallery!');
+        return;
+    }
+    cards.splice(index, 1);
+    
+    // Update activeIndex if it exceeds bounds or matches deleted index
+    if (activeIndex >= cards.length) {
+        activeIndex = cards.length - 1;
+    }
+    
+    renderCards();
+    renderImageList();
+}
+
+// URL Input submit handler
+urlUploadForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const src = document.getElementById('url-input').value;
+    const title = document.getElementById('title-input').value || 'Unlabeled Card';
+    
+    // Extract a random dominant-looking ambient color based on current colors
+    const colorOptions = ['#1a1f3c', '#081e28', '#2b1b1a', '#281230', '#0c2210', '#1c1b30', '#3b2f1a'];
+    const randomColor = colorOptions[Math.floor(Math.random() * colorOptions.length)];
+
+    const newCard = {
+        id: Date.now(),
+        src: src,
+        title: title,
+        desc: 'A user submitted custom network image added to the dynamic cover flow carousel stack.',
+        color: randomColor
+    };
+
+    cards.push(newCard);
+    activeIndex = cards.length - 1; // shift focus to new image
+    
+    renderCards();
+    renderImageList();
+
+    // Reset form
+    urlUploadForm.reset();
+});
+
+// Local file upload handling
+const fileInput = document.getElementById('file-input');
+fileUploadContainer.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', handleFileSelect);
+
+// Drag & drop handlers
+fileUploadContainer.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    fileUploadContainer.classList.add('dragover');
+});
+
+fileUploadContainer.addEventListener('dragleave', () => {
+    fileUploadContainer.classList.remove('dragover');
+});
+
+fileUploadContainer.addEventListener('drop', (e) => {
+    e.preventDefault();
+    fileUploadContainer.classList.remove('dragover');
+    if (e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        handleFileSelect();
+    }
+});
+
+function handleFileSelect() {
+    const file = fileInput.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const src = e.target.result;
+            const title = file.name.split('.')[0] || 'Local Image';
+
+            const colorOptions = ['#1a1f3c', '#081e28', '#2b1b1a', '#281230', '#0c2210', '#1c1b30', '#3b2f1a'];
+            const randomColor = colorOptions[Math.floor(Math.random() * colorOptions.length)];
+
+            const newCard = {
+                id: Date.now(),
+                src: src,
+                title: title,
+                desc: `Uploaded file: ${file.name} (type: ${file.type}, size: ${(file.size / 1024).toFixed(1)}KB) displayed on 3D Cover Flow layout.`,
+                color: randomColor
+            };
+
+            cards.push(newCard);
+            activeIndex = cards.length - 1;
+
+            renderCards();
+            renderImageList();
+        };
+        reader.readAsDataURL(file);
+    } else {
+        alert('Please upload a valid image file!');
+    }
+}
+
 // Init Event Listeners for Nav buttons
 btnPrev.addEventListener('click', () => {
     prevCard();
@@ -444,4 +628,5 @@ btnNext.addEventListener('click', () => {
 // Init render on window load
 window.addEventListener('DOMContentLoaded', () => {
     renderCards();
+    renderImageList();
 });
