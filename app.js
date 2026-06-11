@@ -120,7 +120,7 @@ let paramGlow = 0.60;
 const sliderGlow = document.getElementById('slider-glow');
 const valGlow = document.getElementById('val-glow');
 
-const PEXELS_API_KEY = 'gdSbKXJR7lYB0uAB1oOOwsMMr6rdsBhoLbkcO6rRrF8V9Hr6HCutHMgm';
+// Pexels API key is managed securely in the serverless backend proxy
 
 // Pexels Search elements
 const methodPexels = document.getElementById('method-pexels');
@@ -777,9 +777,7 @@ btnBackToGallery.addEventListener('click', exitStoryMode);
 // Fetch curated photos from Pexels API to initialize the gallery
 async function loadPexelsCurated() {
     try {
-        const response = await fetch('https://api.pexels.com/v1/curated?per_page=10', {
-            headers: { Authorization: PEXELS_API_KEY }
-        });
+        const response = await fetch('/api/pexels?endpoint=curated&per_page=10');
         if (!response.ok) throw new Error('API request failed');
         const data = await response.json();
         if (data.photos && data.photos.length > 0) {
@@ -815,9 +813,7 @@ async function searchPexels() {
     pexelsQueryInput.disabled = true;
 
     try {
-        const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=12`, {
-            headers: { Authorization: PEXELS_API_KEY }
-        });
+        const response = await fetch(`/api/pexels?endpoint=search&query=${encodeURIComponent(query)}&per_page=12`);
         if (!response.ok) throw new Error('Search failed');
         const data = await response.json();
         
