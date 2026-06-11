@@ -174,15 +174,17 @@ function renderCards() {
     updateDecorations();
 
     // Trigger the fly-in animation by removing intro class in the next frames
+    const currentCardEls = Array.from(cardEls);
+    const introDelay = cards.length * 60 + 650;
     setTimeout(() => {
         track.classList.remove('intro');
         
         // Clear transition delay after animation finishes so drag/swipes are instant
         setTimeout(() => {
-            cardEls.forEach(cardEl => {
+            currentCardEls.forEach(cardEl => {
                 cardEl.style.transitionDelay = '';
             });
-        }, cards.length * 60 + 650); // duration of staggered delay + transition duration
+        }, introDelay); // duration of staggered delay + transition duration
     }, 50);
 }
 
