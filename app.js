@@ -114,6 +114,12 @@ const btnBackToGallery = document.getElementById('btn-back-to-gallery');
 const decorActiveIndex = document.getElementById('decor-active-index');
 const decorTotalCount = document.getElementById('decor-total-count');
 
+let paramGlow = 0.60;
+
+// Cache slider glow elements
+const sliderGlow = document.getElementById('slider-glow');
+const valGlow = document.getElementById('val-glow');
+
 const PEXELS_API_KEY = 'gdSbKXJR7lYB0uAB1oOOwsMMr6rdsBhoLbkcO6rRrF8V9Hr6HCutHMgm';
 
 // Pexels Search elements
@@ -127,10 +133,14 @@ const pexelsSearchStatus = document.getElementById('pexels-search-status');
 // Render Card Elements inside Track
 function renderCards() {
     track.innerHTML = '';
+    track.classList.add('intro'); // Add intro class for page load animation
+    
     cards.forEach((card, index) => {
         const cardEl = document.createElement('div');
         cardEl.className = 'card';
         cardEl.dataset.index = index;
+        // Apply staggered transition delay for fanning effect
+        cardEl.style.transitionDelay = `${index * 0.06}s`;
 
         cardEl.innerHTML = `
             <div class="card-inner">
@@ -162,6 +172,18 @@ function renderCards() {
     renderPagination();
     updateCoverflow();
     updateDecorations();
+
+    // Trigger the fly-in animation by removing intro class in the next frames
+    setTimeout(() => {
+        track.classList.remove('intro');
+        
+        // Clear transition delay after animation finishes so drag/swipes are instant
+        setTimeout(() => {
+            cardEls.forEach(cardEl => {
+                cardEl.style.transitionDelay = '';
+            });
+        }, cards.length * 60 + 650); // duration of staggered delay + transition duration
+    }, 50);
 }
 
 // Render indicators
@@ -223,6 +245,7 @@ function updateAmbientBg() {
     if (cards[activeIndex]) {
         const color = cards[activeIndex].color || '#1b203a';
         ambientBg.style.background = `radial-gradient(circle at center, ${color} 0%, var(--bg-dark) 100%)`;
+        ambientBg.style.opacity = paramGlow;
     }
 }
 
@@ -555,6 +578,13 @@ sliderAutoplay.addEventListener('input', (e) => {
     paramAutoplay = parseFloat(e.target.value);
     valAutoplay.textContent = paramAutoplay.toFixed(1);
     resetAutoplay();
+});
+
+// Bind Glow slider input listener
+sliderGlow.addEventListener('input', (e) => {
+    paramGlow = parseFloat(e.target.value);
+    valGlow.textContent = paramGlow.toFixed(2);
+    ambientBg.style.opacity = paramGlow;
 });
 
 // Tab selector logic
