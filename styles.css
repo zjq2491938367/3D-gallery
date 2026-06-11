@@ -1123,4 +1123,26 @@ body {
     cursor: not-allowed;
 }
 
+/* Skeleton Loading Cards */
+.card.skeleton .card-inner {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+    animation: skeleton-pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-spinner {
+    animation: spin-loader 2s linear infinite;
+}
+
+@keyframes skeleton-pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.4; }
+}
+
+@keyframes spin-loader {
+    100% { transform: rotate(360deg); }
+}
+
 

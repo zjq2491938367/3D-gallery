@@ -130,6 +130,54 @@ const btnPexelsSearch = document.getElementById('btn-pexels-search');
 const pexelsSearchResults = document.getElementById('pexels-search-results');
 const pexelsSearchStatus = document.getElementById('pexels-search-status');
 
+// Render Skeleton Card Elements on page startup while loading API in background
+function renderSkeletons(count = 5) {
+    track.innerHTML = '';
+    
+    // Create temporary dummy objects
+    const dummyCards = Array.from({ length: count }, (_, i) => ({
+        id: `skeleton-${i}`,
+        src: '',
+        title: '',
+        desc: '',
+        color: '#1b203a',
+    }));
+    
+    dummyCards.forEach((_, index) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'card skeleton';
+        cardEl.dataset.index = index;
+        cardEl.innerHTML = `
+            <div class="card-inner">
+                <div class="card-front">
+                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.01);">
+                        <svg class="skeleton-spinner" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linecap="round">
+                            <line x1="12" y1="2" x2="12" y2="6"></line>
+                            <line x1="12" y1="18" x2="12" y2="22"></line>
+                            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                            <line x1="2" y1="12" x2="6" y2="12"></line>
+                            <line x1="18" y1="12" x2="22" y2="12"></line>
+                            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                            <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        `;
+        track.appendChild(cardEl);
+    });
+    
+    cardEls = document.querySelectorAll('.card');
+    
+    const oldActiveIndex = activeIndex;
+    activeIndex = Math.floor(count / 2);
+    
+    updateCoverflow();
+    
+    activeIndex = oldActiveIndex;
+}
+
 // Render Card Elements inside Track
 function renderCards() {
     track.innerHTML = '';
@@ -791,11 +839,13 @@ async function loadPexelsCurated() {
                 camera: `Photographer: ${photo.photographer}`
             }));
             activeIndex = Math.floor(cards.length / 2); // Set default middle index
-            renderCards();
-            renderImageList();
         }
+        renderCards();
+        renderImageList();
     } catch (err) {
         console.warn('Pexels Curated load failed, falling back to local presets:', err);
+        renderCards();
+        renderImageList();
     }
 }
 
@@ -873,7 +923,7 @@ pexelsQueryInput.addEventListener('keydown', (e) => {
 
 // Init render on window load
 window.addEventListener('DOMContentLoaded', () => {
-    renderCards();
+    renderSkeletons(5);
     renderImageList();
     loadPexelsCurated();
 });
