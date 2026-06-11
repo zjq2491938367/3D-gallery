@@ -663,7 +663,7 @@ body {
 }
 
 /* Responsive Adjustments */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     :root {
         --panel-width: 320px;
     }
