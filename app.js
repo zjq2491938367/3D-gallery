@@ -793,15 +793,11 @@ async function loadPexelsCurated() {
                 camera: `Photographer: ${photo.photographer}`
             }));
             activeIndex = Math.floor(cards.length / 2); // Set default middle index
+            renderCards();
+            renderImageList();
         }
-        // Render cards regardless of whether Pexels photos loaded or fell back
-        renderCards();
-        renderImageList();
     } catch (err) {
         console.warn('Pexels Curated load failed, falling back to local presets:', err);
-        // Fallback to local default cards (cards array already holds defaultCards)
-        renderCards();
-        renderImageList();
     }
 }
 
@@ -881,5 +877,7 @@ pexelsQueryInput.addEventListener('keydown', (e) => {
 
 // Init render on window load
 window.addEventListener('DOMContentLoaded', () => {
+    renderCards();
+    renderImageList();
     loadPexelsCurated();
 });
